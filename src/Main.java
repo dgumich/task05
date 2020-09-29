@@ -134,8 +134,9 @@ public class Main {
                 System.out.println(myMap);
 
                 System.out.println("HashMap после вставки:");
-                System.out.println(hashMapAdd);
+                System.out.println(hashMap);
                 System.out.println();
+
 
                 //очистка мап
                 myMap.clear();

@@ -10,12 +10,22 @@ class MyMap<K,V> implements Map<K,V> {
 
     /**
      * Дефолтный размер массива, в ячейках которого хранятся объекты Node
-     * По умолчанию равен 32.
+     * По умолчанию равен 16.
      */
 
-    static final int DEFAULT_INITIAL_CAPACITY = 32;
+    int initial_capacity = 16;
 
 
+    /**
+     * Коэффициент загрузки, при достижении которого расширение массива в 2 раза
+     */
+    static final float LOAD_FACTOR = 0.75f;
+
+    /**
+     * Предельное количество элементов, при достижении которого размер хэш-таблицы увеличивается вдвое.
+     * Расчитывается как LOAD_FACTOR * initial_capacity
+     */
+    int threshold = 12;
 
 
     /**
@@ -119,7 +129,7 @@ class MyMap<K,V> implements Map<K,V> {
 
 
     public MyMap() {
-        table = new Node[DEFAULT_INITIAL_CAPACITY];
+        table = new Node[initial_capacity];
         size = 0;
 
     }
@@ -217,6 +227,11 @@ class MyMap<K,V> implements Map<K,V> {
             }
         }
         size++;
+
+        if (check()) {
+            reSize();
+        }
+
         return null;
     }
 
@@ -336,7 +351,7 @@ class MyMap<K,V> implements Map<K,V> {
     @Override
     public void putAll(Map<? extends K, ? extends V> m) {
 
-        clear();
+
         // запрашивается сет с ключами, из map, которую необходимо вставить.
         Set<? extends K> keys = m.keySet();
 
@@ -428,5 +443,49 @@ class MyMap<K,V> implements Map<K,V> {
         }
         sb.append("}");
         return sb.toString();
+    }
+
+    /**
+     * Метод проверяет размер заполненость массива Node и возвращает boolean значение.
+     * @return true если массив заполнен больше и его нужно расширить, false - массив не надо расширять.
+     */
+    public boolean check() {
+
+        int count = 0;
+
+        for (int i = 0; i < table.length; i++) {
+            if (table[i] != null) {
+                count++;
+            }
+        }
+        return count > threshold;
+
+    }
+
+
+    /**
+     * Метод увеличивает текущий массив с Node в 2 раза.
+     */
+    public void reSize() {
+
+        //выгружаем Set из Node из текущего массива
+        Set<Entry<K, V>> nodes = entrySet();
+
+        //создаем массив в 2 раза больше, чем текущий, обновляем параметры
+        int length = table.length;
+        table = new Node[length * 2];
+        size = 0;
+        threshold = (int) (table.length * LOAD_FACTOR);
+
+        //заполняем массив
+        for (Entry entry : nodes) {
+            V value = (V) entry.getValue();
+            K key = (K) entry.getKey();
+            put(key, value);
+        }
+
+
+
+
     }
 }
